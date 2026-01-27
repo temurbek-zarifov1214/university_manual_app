@@ -1,5 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Primary Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
+    <color name="primary_light">#BBDEFB</color>
+    <color name="accent">#FF5722</color>
+
+    <!-- Background Colors -->
+    <color name="background">#FFFFFF</color>
+    <color name="background_light">#F5F5F5</color>
+    <color name="card_background">#FFFFFF</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="text_hint">#BDBDBD</color>
+
+    <!-- Category Colors -->
+    <color name="category_maruzalar">#FF6B6B</color>
+    <color name="category_adabiyotlar">#4ECDC4</color>
+    <color name="category_labaratoriya">#45B7D1</color>
+    <color name="category_practice">#FFA07A</color>
+    <color name="category_masalalar">#96CEB4</color>
+    <color name="category_sillabus">#DDA15E</color>
+
+    <!-- Other Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="favorite_active">#FF9800</color>
+    <color name="pdf_color">#F44336</color>
+    <color name="pptx_color">#FF9800</color>
 </resources>

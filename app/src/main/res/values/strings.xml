@@ -1,3 +1,32 @@
 <resources>
-    <string name="app_name">test</string>
+    <string name="app_name">Test</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Asosiy</string>
+    <string name="nav_favorites">Sevimlilar</string>
+    <string name="nav_recent">So\'nggi</string>
+    <string name="nav_search">Qidiruv</string>
+
+    <!-- Categories -->
+    <string name="category_maruzalar">Ma\'ruzalar</string>
+    <string name="category_adabiyotlar">Adabiyotlar</string>
+    <string name="category_labaratoriya">Labaratoriya</string>
+    <string name="category_amaliy_mashgulot">Amaliy mashg\'ulot</string>
+    <string name="category_masalalar">Masalalar</string>
+    <string name="category_sillabus">Sillabus</string>
+
+    <!-- Common -->
+    <string name="no_files_found">Hech qanday fayl topilmadi</string>
+    <string name="search_hint">Qidirish...</string>
+    <string name="open">Ochish</string>
+    <string name="download">Yuklab olish</string>
+    <string name="share">Ulashish</string>
+    <string name="add_to_favorites">Sevimlilarga qo\'shish</string>
+    <string name="remove_from_favorites">Sevimlilardan o\'chirish</string>
+    <string name="file_downloaded">Fayl yuklab olindi</string>
+    <string name="error_opening_file">Faylni ochishda xatolik</string>
+
+    <!-- File Types -->
+    <string name="pdf_document">PDF hujjat</string>
+    <string name="pptx_presentation">PowerPoint taqdimot</string>
 </resources>
