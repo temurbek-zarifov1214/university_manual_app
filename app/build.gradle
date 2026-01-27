@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "uz.doc.test"
-        minSdk 24
+        minSdk 26
         targetSdk 36
         versionCode 1
         versionName "1.0"
@@ -29,7 +29,7 @@ android {
 }
 
 dependencies {
-
+    implementation libs.gson
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -37,4 +37,27 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    // Navigation Components
+    implementation libs.navigation.fragment
+    implementation libs.navigation.ui
+
+    // RecyclerView
+    implementation libs.recyclerview
+    implementation libs.cardview
+
+    // PDF Viewer - Best library for Android
+    implementation libs.mhiew.android.pdf.viewer
+
+
+    // Apache POI for Office files (PPTX reading)
+    implementation libs.poi
+    implementation libs.poi.ooxml
+    implementation libs.xmlbeans
+
+    // Image loading for thumbnails (optional, but useful)
+    implementation libs.glide
+    annotationProcessor libs.compiler
+
+    // For file operations
+    implementation libs.commons.io
 }
