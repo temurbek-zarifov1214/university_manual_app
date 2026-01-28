@@ -47,7 +47,7 @@ dependencies {
     // RecyclerView
     implementation libs.recyclerview
     implementation libs.cardview
-
+    implementation libs.core.splashscreen.v110
     // Apache POI for Office files (PPTX reading)
     implementation libs.poi
     implementation libs.poi.ooxml
