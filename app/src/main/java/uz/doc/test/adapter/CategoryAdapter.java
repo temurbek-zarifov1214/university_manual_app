@@ -1,5 +1,6 @@
 package uz.doc.test.adapter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +37,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         this.fileManager = FileManager.getInstance(context);
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setCategories(List<Category> categories) {
         this.categories = categories;
         notifyDataSetChanged();
