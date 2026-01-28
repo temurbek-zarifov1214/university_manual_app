@@ -1,9 +1,11 @@
 package uz.doc.test.model;
 
-public class Category {
+import java.io.Serializable;
+
+public class Category implements Serializable {
     private String id;
     private String name;
-    private String nameUz; // Uzbek name
+    private String nameUz;
     private int iconResId;
     private String folderPath;
 
@@ -15,7 +17,7 @@ public class Category {
         this.folderPath = folderPath;
     }
 
-    // Getters and Setters
+    // Getters and Setters (keep all existing ones)
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
