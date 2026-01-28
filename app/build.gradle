@@ -14,6 +14,9 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
 
     buildTypes {
@@ -44,10 +47,6 @@ dependencies {
     // RecyclerView
     implementation libs.recyclerview
     implementation libs.cardview
-
-    // PDF Viewer - Best library for Android
-    implementation libs.mhiew.android.pdf.viewer
-
 
     // Apache POI for Office files (PPTX reading)
     implementation libs.poi
