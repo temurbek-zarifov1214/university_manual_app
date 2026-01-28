@@ -29,4 +29,6 @@
     <!-- File Types -->
     <string name="pdf_document">PDF hujjat</string>
     <string name="pptx_presentation">PowerPoint taqdimot</string>
+    <string name="category_icon">Category Icon</string>
+    <string name="ma_ruzalar">Ma\'ruzalar</string>
 </resources>

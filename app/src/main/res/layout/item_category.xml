@@ -9,6 +9,7 @@
     app:cardElevation="4dp"
     android:clickable="true"
     android:focusable="true"
+    app:rippleColor="@color/primary_light"
     android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
@@ -25,7 +26,7 @@
             android:layout_height="64dp"
             android:src="@drawable/ic_lecture"
             android:scaleType="fitCenter"
-            android:contentDescription="Category Icon" />
+            android:contentDescription="@string/category_icon" />
 
         <!-- Category Name -->
         <TextView
@@ -33,7 +34,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Ma'ruzalar"
+            android:text="@string/ma_ruzalar"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/text_primary"

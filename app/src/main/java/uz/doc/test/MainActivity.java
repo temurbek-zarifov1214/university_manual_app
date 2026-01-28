@@ -3,10 +3,14 @@ package uz.doc.test;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
+import uz.doc.test.R;
+import uz.doc.test.ui.favorites.FavoritesFragment;
 import uz.doc.test.ui.HomeFragment;
+import uz.doc.test.ui.recent.RecentFragment;
+import uz.doc.test.ui.search.SearchFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,6 +19,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Install splash screen
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -45,20 +52,14 @@ public class MainActivity extends AppCompatActivity {
                 fragment = new HomeFragment();
                 title = "Test";
             } else if (itemId == R.id.navigation_favorites) {
-                // TODO: Create FavoritesFragment in Step 5
-                // fragment = new FavoritesFragment();
+                fragment = new FavoritesFragment();
                 title = "Sevimlilar";
-                return true; // Temporary
             } else if (itemId == R.id.navigation_recent) {
-                // TODO: Create RecentFragment in Step 5
-                // fragment = new RecentFragment();
+                fragment = new RecentFragment();
                 title = "So'nggi fayllar";
-                return true; // Temporary
             } else if (itemId == R.id.navigation_search) {
-                // TODO: Create SearchFragment in Step 5
-                // fragment = new SearchFragment();
+                fragment = new SearchFragment();
                 title = "Qidiruv";
-                return true; // Temporary
             }
 
             if (fragment != null) {

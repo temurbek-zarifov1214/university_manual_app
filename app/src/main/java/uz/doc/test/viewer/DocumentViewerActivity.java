@@ -1,8 +1,12 @@
 package uz.doc.test.viewer;
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -13,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnErrorListener;
@@ -28,7 +33,12 @@ import uz.doc.test.utils.SharedPrefsHelper;
 
 import java.io.File;
 import java.io.InputStream;
-
+import android.content.Intent;
+import android.net.Uri;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.core.content.FileProvider;
+import java.io.File;
 public class DocumentViewerActivity extends AppCompatActivity {
 
     private static final String TAG = "DocumentViewerActivity";
@@ -278,6 +288,68 @@ public class DocumentViewerActivity extends AppCompatActivity {
             webView.goBack();
         } else {
             super.onBackPressed();
+        }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_document_viewer, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_share) {
+            shareDocument();
+            return true;
+        } else if (id == R.id.action_download) {
+            downloadDocument();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void shareDocument() {
+        try {
+            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+
+            if (file != null && file.exists()) {
+                Uri fileUri = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".fileprovider",
+                        file
+                );
+
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType(document.getType() == Document.DocumentType.PDF ?
+                        "application/pdf" : "application/vnd.ms-powerpoint");
+                shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                startActivity(Intent.createChooser(shareIntent, "Ulashish"));
+            } else {
+                Toast.makeText(this, "Faylni ulashib bo'lmadi", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error sharing document", e);
+            Toast.makeText(this, "Xatolik yuz berdi", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void downloadDocument() {
+        try {
+            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+
+            if (file != null && file.exists()) {
+                Toast.makeText(this, "Fayl saqlandi: " + file.getName(), Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(this, "Faylni saqlab bo'lmadi", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error downloading document", e);
+            Toast.makeText(this, "Xatolik yuz berdi", Toast.LENGTH_SHORT).show();
         }
     }
 }

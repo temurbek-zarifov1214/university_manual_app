@@ -13,7 +13,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class FileManager {
@@ -21,10 +24,11 @@ public class FileManager {
     private static FileManager instance;
     private Context context;
     private AssetManager assetManager;
-
+    private Map<String, List<Document>> categoryCache;
     private FileManager(Context context) {
         this.context = context.getApplicationContext();
         this.assetManager = context.getAssets();
+        this.categoryCache = new HashMap<>();
     }
 
     public static synchronized FileManager getInstance(Context context) {
@@ -38,6 +42,9 @@ public class FileManager {
      * Get all documents from a specific category folder
      */
     public List<Document> getDocumentsFromCategory(String categoryId) {
+        if (categoryCache.containsKey(categoryId)) {
+            return new ArrayList<>(Objects.requireNonNull(categoryCache.get(categoryId)));
+        }
         List<Document> documents = new ArrayList<>();
         String folderPath = Constants.ASSETS_BASE_PATH + "/" + categoryId;
 
@@ -67,7 +74,7 @@ public class FileManager {
 
             // Sort by title
             documents.sort((d1, d2) -> d1.getTitle().compareToIgnoreCase(d2.getTitle()));
-
+            categoryCache.put(categoryId, documents);
         } catch (IOException e) {
             Log.e(TAG, "Error reading files from category: " + categoryId, e);
         }
