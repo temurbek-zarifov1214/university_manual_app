@@ -2,8 +2,10 @@ package uz.doc.test.viewer;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,11 +20,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.listener.OnErrorListener;
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
-import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import uz.doc.test.R;
@@ -32,19 +32,13 @@ import uz.doc.test.utils.Constants;
 import uz.doc.test.utils.SharedPrefsHelper;
 
 import java.io.File;
-import java.io.InputStream;
-import android.content.Intent;
-import android.net.Uri;
-import android.view.Menu;
-import android.view.MenuItem;
-import androidx.core.content.FileProvider;
-import java.io.File;
+
 public class DocumentViewerActivity extends AppCompatActivity {
 
     private static final String TAG = "DocumentViewerActivity";
 
     private Toolbar toolbar;
-    private PDFView pdfView;
+    private RecyclerView pdfRecyclerView;
     private WebView webView;
     private ProgressBar progressBar;
     private LinearLayout errorState;
@@ -53,6 +47,9 @@ public class DocumentViewerActivity extends AppCompatActivity {
     private Document document;
     private FileManager fileManager;
     private SharedPrefsHelper prefsHelper;
+    private ParcelFileDescriptor pdfFileDescriptor;
+    private PdfRenderer pdfRenderer;
+    private PdfPageAdapter pdfPageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +65,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
 
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
-        pdfView = findViewById(R.id.pdf_view);
+        pdfRecyclerView = findViewById(R.id.pdf_viewer);
         webView = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progress_bar);
         errorState = findViewById(R.id.error_state);
@@ -137,40 +134,21 @@ public class DocumentViewerActivity extends AppCompatActivity {
         try {
             showLoading();
 
-            InputStream inputStream = fileManager.getAssetInputStream(document.getFilePath());
-
-            if (inputStream == null) {
+            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            if (file == null || !file.exists()) {
                 showError();
                 return;
             }
 
-            pdfView.setVisibility(View.VISIBLE);
-            webView.setVisibility(View.GONE);
+            pdfFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+            pdfRenderer = new PdfRenderer(pdfFileDescriptor);
+            pdfPageAdapter = new PdfPageAdapter(this, pdfRenderer);
 
-            pdfView.fromStream(inputStream)
-                    .defaultPage(0)
-                    .enableSwipe(true)
-                    .swipeHorizontal(false)
-                    .enableDoubletap(true)
-                    .enableAnnotationRendering(false)
-                    .scrollHandle(new DefaultScrollHandle(this))
-                    .spacing(10)
-                    .onLoad(new OnLoadCompleteListener() {
-                        @Override
-                        public void loadComplete(int nbPages) {
-                            hideLoading();
-                            Log.d(TAG, "PDF loaded successfully. Pages: " + nbPages);
-                        }
-                    })
-                    .onError(new OnErrorListener() {
-                        @Override
-                        public void onError(Throwable t) {
-                            hideLoading();
-                            showError();
-                            Log.e(TAG, "Error loading PDF", t);
-                        }
-                    })
-                    .load();
+            pdfRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            pdfRecyclerView.setAdapter(pdfPageAdapter);
+            pdfRecyclerView.setVisibility(View.VISIBLE);
+            webView.setVisibility(View.GONE);
+            hideLoading();
 
         } catch (Exception e) {
             hideLoading();
@@ -192,7 +170,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
             }
 
             // Use Google Docs Viewer in WebView
-            pdfView.setVisibility(View.GONE);
+            pdfRecyclerView.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
 
             setupWebView();
@@ -277,7 +255,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
 
     private void showError() {
         progressBar.setVisibility(View.GONE);
-        pdfView.setVisibility(View.GONE);
+        pdfRecyclerView.setVisibility(View.GONE);
         webView.setVisibility(View.GONE);
         errorState.setVisibility(View.VISIBLE);
     }
@@ -350,6 +328,25 @@ public class DocumentViewerActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error downloading document", e);
             Toast.makeText(this, "Xatolik yuz berdi", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            if (pdfRenderer != null) {
+                pdfRenderer.close();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to close PdfRenderer", e);
+        }
+        try {
+            if (pdfFileDescriptor != null) {
+                pdfFileDescriptor.close();
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to close PDF file descriptor", e);
         }
     }
 }

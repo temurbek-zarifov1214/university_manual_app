@@ -1,9 +1,5 @@
 # Add project specific ProGuard rules here.
 
-# Keep PDF Viewer
--keep class com.github.barteksc.pdfviewer.** { *; }
--dontwarn com.github.barteksc.pdfviewer.**
-
 # Keep Apache POI
 -keep class org.apache.poi.** { *; }
 -dontwarn org.apache.poi.**

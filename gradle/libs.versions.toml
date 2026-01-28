@@ -1,7 +1,5 @@
 [versions]
 agp = "8.9.1"
-androidPdfViewer = "3.2.0-beta.1"
-androidPdfViewerVersion = "3.2.0-beta.3"
 cardview = "1.0.0"
 commonsIo = "2.21.0"
 compiler = "5.0.5"
@@ -21,7 +19,6 @@ recyclerview = "1.4.0"
 xmlbeans = "5.3.0"
 
 [libraries]
-android-pdf-viewer = { module = "com.github.barteksc:android-pdf-viewer", version.ref = "androidPdfViewer" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
@@ -35,7 +32,6 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "a
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-mhiew-android-pdf-viewer = { module = "com.github.mhiew:android-pdf-viewer", version.ref = "androidPdfViewerVersion" }
 navigation-fragment = { module = "androidx.navigation:navigation-fragment", version.ref = "navigationFragment" }
 navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "navigationUi" }
 poi = { module = "org.apache.poi:poi", version.ref = "poiOoxml" }
@@ -45,4 +41,3 @@ xmlbeans = { module = "org.apache.xmlbeans:xmlbeans", version.ref = "xmlbeans" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-
