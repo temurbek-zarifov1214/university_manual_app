@@ -1,23 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme (MUST be AppCompat) -->
+    <!-- Base application theme -->
     <style name="Theme.Test" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-
         <item name="android:statusBarColor">@color/primary</item>
         <item name="android:windowBackground">@color/background</item>
     </style>
 
     <!-- Splash Screen Theme -->
     <style name="Theme.Test.Splash" parent="Theme.AppCompat.DayNight.NoActionBar">
-        <item name="android:windowSplashScreenBackground">@color/primary</item>
+        <!-- Background color for the splash screen -->
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
-        <item name="android:windowSplashScreenAnimationDuration">500</item>
-
-        <!-- VERY IMPORTANT -->
-        <item name="postSplashScreenTheme">@style/Theme.Test</item>
     </style>
 
 </resources>

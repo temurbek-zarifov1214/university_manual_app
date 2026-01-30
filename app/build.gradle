@@ -14,6 +14,7 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
         ndk {
             abiFilters "armeabi-v7a", "arm64-v8a"
         }
@@ -25,41 +26,64 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    // IMPORTANT: Enable ViewBinding
+    buildFeatures {
+        viewBinding true
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE', 'META-INF/LICENSE.txt',
+                         'META-INF/license.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt',
+                         'META-INF/notice.txt', 'META-INF/ASL2.0', 'META-INF/*.kotlin_module']
+        }
+    }
 }
 
 dependencies {
-    implementation libs.gson
-    implementation libs.appcompat
-    implementation libs.material
-    implementation libs.activity
-    implementation libs.constraintlayout
-    testImplementation libs.junit
-    androidTestImplementation libs.ext.junit
-    androidTestImplementation libs.espresso.core
-    // Navigation Components
-    implementation libs.navigation.fragment
-    implementation libs.navigation.ui
+    // AndroidX Core
+    implementation libs.appcompat.v161
+    implementation libs.material.v1110
+    implementation libs.activity.v182
+    implementation libs.constraintlayout.v214
+    implementation libs.core
+    implementation libs.core.ktx
+
+    // Navigation
+    implementation libs.navigation.fragment.v277
+    implementation libs.navigation.ui.v277
 
     // RecyclerView
-    implementation libs.recyclerview
+    implementation libs.recyclerview.v132
     implementation libs.cardview
-    implementation libs.core.splashscreen.v110
-    // Apache POI for Office files (PPTX reading)
-    implementation libs.poi
-    implementation libs.poi.ooxml
-    implementation libs.xmlbeans
 
-    // Image loading for thumbnails (optional, but useful)
-    implementation libs.glide
-    annotationProcessor libs.compiler
+    // Apache POI for PPTX
+    implementation libs.poi.v525
+    implementation libs.poi.ooxml.v525
+    implementation libs.xmlbeans.v511
+    implementation libs.commons.compress
 
-    // Splash Screen API
-    implementation libs.core.splashscreen
+    // Glide
+    implementation libs.glide.v4160
+    annotationProcessor libs.compiler.v4160
 
-    // For file operations
-    implementation libs.commons.io
+    // Gson
+    implementation libs.gson.v2101
+
+    // Splash Screen
+    implementation libs.core.splashscreen.v101
+
+    // File operations
+    implementation libs.commons.io.v2151
+
+    // Testing
+    testImplementation libs.junit
+    androidTestImplementation libs.junit.v115
+    androidTestImplementation libs.espresso.core.v351
 }

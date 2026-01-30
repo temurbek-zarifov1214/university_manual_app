@@ -33,13 +33,15 @@
         <activity
             android:name=".ui.CategoryFilesActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CategoryFilesActivity" />
+            android:parentActivityName=".MainActivity" />
 
         <!-- DocumentViewerActivity -->
         <activity
             android:name=".viewer.DocumentViewerActivity"
             android:exported="false"
-            android:parentActivityName=".viewer.DocumentViewerActivity" />
+            android:parentActivityName=".ui.CategoryFilesActivity" />
+
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
