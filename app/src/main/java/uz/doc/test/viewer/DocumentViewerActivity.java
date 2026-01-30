@@ -25,6 +25,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.apache.poi.xslf.usermodel.XSLFPictureShape;
+import org.apache.poi.xslf.usermodel.XSLFShape;
+import org.apache.poi.xslf.usermodel.XSLFSlide;
+import org.apache.poi.xslf.usermodel.XSLFTextShape;
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
+
 import uz.doc.test.R;
 import uz.doc.test.manager.FileManager;
 import uz.doc.test.model.Document;
@@ -32,6 +38,11 @@ import uz.doc.test.utils.Constants;
 import uz.doc.test.utils.SharedPrefsHelper;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DocumentViewerActivity extends AppCompatActivity {
 
@@ -50,6 +61,8 @@ public class DocumentViewerActivity extends AppCompatActivity {
     private ParcelFileDescriptor pdfFileDescriptor;
     private PdfRenderer pdfRenderer;
     private PdfPageAdapter pdfPageAdapter;
+    private PptxSlideAdapter pptxSlideAdapter;
+    private final ExecutorService pptxExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,23 +196,78 @@ public class DocumentViewerActivity extends AppCompatActivity {
                 return;
             }
 
-            // Use Google Docs Viewer in WebView (requires internet)
-            pdfRecyclerView.setVisibility(View.GONE);
-            webView.setVisibility(View.VISIBLE);
-
-            setupWebView();
-
-            // Create HTML content to display PPTX
-            String html = createPPTXPlaceholderHTML();
-            webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
-
-            hideLoading();
+            if (document.getType() == Document.DocumentType.PPTX) {
+                loadPPTXInsideApp(file);
+            } else {
+                // Legacy PPT is not supported for in-app rendering yet
+                pdfRecyclerView.setVisibility(View.GONE);
+                webView.setVisibility(View.VISIBLE);
+                setupWebView();
+                String html = createPPTXPlaceholderHTML();
+                webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
+                hideLoading();
+            }
 
         } catch (Exception e) {
             hideLoading();
             showError();
             Log.e(TAG, "Error loading PPTX", e);
         }
+    }
+
+    private void loadPPTXInsideApp(File file) {
+        pdfRecyclerView.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.GONE);
+        pdfRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        pptxExecutor.execute(() -> {
+            List<PptxSlideAdapter.SlideItem> slides = new ArrayList<>();
+            try (FileInputStream fis = new FileInputStream(file);
+                 XMLSlideShow ppt = new XMLSlideShow(fis)) {
+                List<XSLFSlide> pptSlides = ppt.getSlides();
+                for (int i = 0; i < pptSlides.size(); i++) {
+                    XSLFSlide slide = pptSlides.get(i);
+
+                    StringBuilder text = new StringBuilder();
+                    byte[] firstImage = null;
+
+                    for (XSLFShape shape : slide.getShapes()) {
+                        if (shape instanceof XSLFTextShape) {
+                            String t = ((XSLFTextShape) shape).getText();
+                            if (t != null) {
+                                t = t.trim();
+                                if (!t.isEmpty()) {
+                                    if (text.length() > 0) text.append("\n\n");
+                                    text.append(t);
+                                }
+                            }
+                        } else if (firstImage == null && shape instanceof XSLFPictureShape) {
+                            try {
+                                firstImage = ((XSLFPictureShape) shape).getPictureData().getData();
+                            } catch (Exception ignore) {
+                                // keep null
+                            }
+                        }
+                    }
+
+                    slides.add(new PptxSlideAdapter.SlideItem(i + 1, text.toString(), firstImage));
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to parse PPTX", e);
+            }
+
+            runOnUiThread(() -> {
+                if (isFinishing()) return;
+                if (slides.isEmpty()) {
+                    showError();
+                    return;
+                }
+                pptxSlideAdapter = new PptxSlideAdapter(this);
+                pptxSlideAdapter.setSlides(slides);
+                pdfRecyclerView.setAdapter(pptxSlideAdapter);
+                hideLoading();
+            });
+        });
     }
 
     private void setupWebView() {
@@ -316,8 +384,9 @@ public class DocumentViewerActivity extends AppCompatActivity {
                 );
 
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType(document.getType() == Document.DocumentType.PDF ?
-                        "application/pdf" : "application/vnd.ms-powerpoint");
+                shareIntent.setType(document.getType() == Document.DocumentType.PDF
+                        ? "application/pdf"
+                        : "application/vnd.ms-powerpoint");
                 shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
@@ -354,6 +423,10 @@ public class DocumentViewerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            pptxExecutor.shutdownNow();
+        } catch (Exception ignore) {
+        }
         try {
             if (pdfRenderer != null) {
                 pdfRenderer.close();

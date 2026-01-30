@@ -24,6 +24,7 @@ public class FileManager {
     private static FileManager instance;
     private Context context;
     private AssetManager assetManager;
+    // Cache asset documents per category (helps search performance)
     private Map<String, List<Document>> categoryCache;
 
     private FileManager(Context context) {
@@ -46,36 +47,8 @@ public class FileManager {
     public List<Document> getDocumentsFromCategory(String categoryId) {
         List<Document> documents = new ArrayList<>();
 
-        // 1. Load files from assets
-        String folderPath = Constants.assetCategoryPath(categoryId);
-        try {
-            String[] files = assetManager.list(folderPath);
-
-            if (files != null) {
-                for (String fileName : files) {
-                    // Skip hidden files and directories
-                    if (fileName.startsWith(".")) {
-                        continue;
-                    }
-
-                    Document.DocumentType type = getDocumentType(fileName);
-                    if (type != null) {
-                        Document doc = new Document();
-                        String filePath = folderPath + "/" + fileName;
-                        doc.setId(generateStableId(filePath));
-                        doc.setTitle(getFileNameWithoutExtension(fileName));
-                        doc.setFilePath(filePath);
-                        doc.setCategoryId(categoryId);
-                        doc.setType(type);
-                        doc.setFromAssets(true);  // Mark as asset file
-
-                        documents.add(doc);
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error reading files from category: " + categoryId, e);
-        }
+        // 1. Load files from assets (cached)
+        documents.addAll(getAssetDocumentsFromCategory(categoryId));
 
         // 2. Load user-uploaded files
         File userCategoryDir = new File(context.getFilesDir(), "user_files/" + categoryId);
@@ -109,6 +82,69 @@ public class FileManager {
         documents.sort((d1, d2) -> d1.getTitle().compareToIgnoreCase(d2.getTitle()));
 
         return documents;
+    }
+
+    private List<Document> getAssetDocumentsFromCategory(String categoryId) {
+        if (categoryId == null) return new ArrayList<>();
+
+        List<Document> cached = categoryCache.get(categoryId);
+        if (cached != null) {
+            return cloneDocuments(cached);
+        }
+
+        List<Document> assetDocs = new ArrayList<>();
+        String folderPath = Constants.assetCategoryPath(categoryId);
+        try {
+            String[] files = assetManager.list(folderPath);
+            if (files != null) {
+                for (String fileName : files) {
+                    // Skip hidden files and directories
+                    if (fileName.startsWith(".")) continue;
+
+                    Document.DocumentType type = getDocumentType(fileName);
+                    if (type == null) continue;
+
+                    Document doc = new Document();
+                    String filePath = folderPath + "/" + fileName;
+                    doc.setId(generateStableId(filePath));
+                    doc.setTitle(getFileNameWithoutExtension(fileName));
+                    doc.setFilePath(filePath);
+                    doc.setCategoryId(categoryId);
+                    doc.setType(type);
+                    doc.setFromAssets(true);
+                    assetDocs.add(doc);
+                }
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading files from category: " + categoryId, e);
+        }
+
+        categoryCache.put(categoryId, assetDocs);
+        return cloneDocuments(assetDocs);
+    }
+
+    private List<Document> cloneDocuments(List<Document> docs) {
+        List<Document> copies = new ArrayList<>();
+        if (docs == null) return copies;
+        for (Document d : docs) {
+            copies.add(cloneDocument(d));
+        }
+        return copies;
+    }
+
+    private Document cloneDocument(Document d) {
+        if (d == null) return null;
+        Document copy = new Document();
+        copy.setId(d.getId());
+        copy.setTitle(d.getTitle());
+        copy.setFilePath(d.getFilePath());
+        copy.setCategoryId(d.getCategoryId());
+        copy.setType(d.getType());
+        copy.setFileSize(d.getFileSize());
+        copy.setLastModified(d.getLastModified());
+        copy.setFavorite(d.isFavorite());
+        copy.setFromAssets(d.isFromAssets());
+        return copy;
     }
 
     /**
