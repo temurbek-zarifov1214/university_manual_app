@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- REMOVE THE DUPLICATE - Keep only ONE -->
+    <!-- Splash Screen Theme for API 31+ (Android 12+) -->
     <style name="Theme.Test.Splash" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowSplashScreenBackground">@color/primary</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
