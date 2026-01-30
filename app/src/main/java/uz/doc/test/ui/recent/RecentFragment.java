@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -22,12 +23,14 @@ import uz.doc.test.utils.Constants;
 import uz.doc.test.utils.SharedPrefsHelper;
 import uz.doc.test.viewer.DocumentViewerActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecentFragment extends Fragment {
 
     private RecyclerView rvRecent;
     private LinearLayout emptyState;
+    private Button btnClearRecent;
     private DocumentAdapter documentAdapter;
 
     private FileManager fileManager;
@@ -56,9 +59,12 @@ public class RecentFragment extends Fragment {
     private void initViews(View view) {
         rvRecent = view.findViewById(R.id.rv_recent);
         emptyState = view.findViewById(R.id.empty_state);
+        btnClearRecent = view.findViewById(R.id.btn_clear_recent);
 
         fileManager = FileManager.getInstance(requireContext());
         prefsHelper = SharedPrefsHelper.getInstance(requireContext());
+
+        btnClearRecent.setOnClickListener(v -> clearRecentFiles());
     }
 
     private void setupRecyclerView() {
@@ -86,18 +92,33 @@ public class RecentFragment extends Fragment {
         if (recentPaths.isEmpty()) {
             emptyState.setVisibility(View.VISIBLE);
             rvRecent.setVisibility(View.GONE);
+            btnClearRecent.setVisibility(View.GONE);
         } else {
             List<Document> recentDocuments = fileManager.getDocumentsByPaths(recentPaths);
 
             if (recentDocuments.isEmpty()) {
                 emptyState.setVisibility(View.VISIBLE);
                 rvRecent.setVisibility(View.GONE);
+                // If nothing can be resolved anymore, hide button and keep UI clean.
+                btnClearRecent.setVisibility(View.GONE);
             } else {
                 emptyState.setVisibility(View.GONE);
                 rvRecent.setVisibility(View.VISIBLE);
                 documentAdapter.setDocuments(recentDocuments);
+                btnClearRecent.setVisibility(View.VISIBLE);
             }
         }
+    }
+
+    private void clearRecentFiles() {
+        prefsHelper.clearRecentFiles();
+        if (documentAdapter != null) {
+            documentAdapter.setDocuments(new ArrayList<>());
+        }
+        emptyState.setVisibility(View.VISIBLE);
+        rvRecent.setVisibility(View.GONE);
+        btnClearRecent.setVisibility(View.GONE);
+        Toast.makeText(requireContext(), "So'nggi fayllar tozalandi", Toast.LENGTH_SHORT).show();
     }
 
     private void openDocument(Document document) {
