@@ -38,7 +38,7 @@ public class CategoryManager {
                 "Lectures",
                 "Ma'ruzalar",
                 R.drawable.ic_lecture,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_MARUZALAR
+                Constants.assetCategoryPath(Constants.CATEGORY_MARUZALAR)
         ));
 
         // Adabiyotlar (Literature)
@@ -47,7 +47,7 @@ public class CategoryManager {
                 "Literature",
                 "Adabiyotlar",
                 R.drawable.ic_book,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_ADABIYOTLAR
+                Constants.assetCategoryPath(Constants.CATEGORY_ADABIYOTLAR)
         ));
 
         // Labaratoriya (Laboratory)
@@ -56,7 +56,7 @@ public class CategoryManager {
                 "Laboratory",
                 "Labaratoriya",
                 R.drawable.ic_lab,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_LABARATORIYA
+                Constants.assetCategoryPath(Constants.CATEGORY_LABARATORIYA)
         ));
 
         // Amaliy mashg'ulot (Practical classes)
@@ -65,7 +65,7 @@ public class CategoryManager {
                 "Practical",
                 "Amaliy mashg'ulot",
                 R.drawable.ic_practise,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_AMALIY_MASHGULOT
+                Constants.assetCategoryPath(Constants.CATEGORY_AMALIY_MASHGULOT)
         ));
 
         // Masalalar (Problems/Exercises)
@@ -74,7 +74,7 @@ public class CategoryManager {
                 "Problems",
                 "Masalalar",
                 R.drawable.ic_problem,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_MASALALAR
+                Constants.assetCategoryPath(Constants.CATEGORY_MASALALAR)
         ));
 
         // Sillabus (Syllabus)
@@ -83,7 +83,7 @@ public class CategoryManager {
                 "Syllabus",
                 "Sillabus",
                 R.drawable.ic_syllabus,
-                Constants.ASSETS_BASE_PATH + "/" + Constants.CATEGORY_SILLABUS
+                Constants.assetCategoryPath(Constants.CATEGORY_SILLABUS)
         ));
     }
 

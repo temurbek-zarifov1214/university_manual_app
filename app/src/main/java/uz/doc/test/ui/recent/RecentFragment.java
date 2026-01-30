@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -19,18 +18,16 @@ import uz.doc.test.R;
 import uz.doc.test.adapter.DocumentAdapter;
 import uz.doc.test.manager.FileManager;
 import uz.doc.test.model.Document;
-import uz.doc.test.viewer.DocumentViewerActivity;
 import uz.doc.test.utils.Constants;
 import uz.doc.test.utils.SharedPrefsHelper;
+import uz.doc.test.viewer.DocumentViewerActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RecentFragment extends Fragment {
 
     private RecyclerView rvRecent;
     private LinearLayout emptyState;
-    private Button btnClearRecent;
     private DocumentAdapter documentAdapter;
 
     private FileManager fileManager;
@@ -44,7 +41,7 @@ public class RecentFragment extends Fragment {
 
         initViews(view);
         setupRecyclerView();
-        setupClearButton();
+        loadRecentFiles();
 
         return view;
     }
@@ -52,13 +49,13 @@ public class RecentFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Reload recent files when fragment becomes visible
         loadRecentFiles();
     }
 
     private void initViews(View view) {
         rvRecent = view.findViewById(R.id.rv_recent);
         emptyState = view.findViewById(R.id.empty_state);
-        btnClearRecent = view.findViewById(R.id.btn_clear_recent);
 
         fileManager = FileManager.getInstance(requireContext());
         prefsHelper = SharedPrefsHelper.getInstance(requireContext());
@@ -83,44 +80,31 @@ public class RecentFragment extends Fragment {
         rvRecent.setAdapter(documentAdapter);
     }
 
-    private void setupClearButton() {
-        btnClearRecent.setOnClickListener(v -> {
-            prefsHelper.clearRecentFiles();
-            loadRecentFiles();
-            Toast.makeText(requireContext(), "So'nggi fayllar tozalandi", Toast.LENGTH_SHORT).show();
-        });
-    }
-
     private void loadRecentFiles() {
         List<String> recentPaths = prefsHelper.getRecentFiles();
-        List<Document> allDocuments = fileManager.getAllDocuments();
-        List<Document> recentDocuments = new ArrayList<>();
 
-        // Find documents by their file paths
-        for (String path : recentPaths) {
-            for (Document doc : allDocuments) {
-                if (doc.getFilePath().equals(path)) {
-                    recentDocuments.add(doc);
-                    break;
-                }
-            }
-        }
-
-        if (recentDocuments.isEmpty()) {
+        if (recentPaths.isEmpty()) {
             emptyState.setVisibility(View.VISIBLE);
             rvRecent.setVisibility(View.GONE);
-            btnClearRecent.setVisibility(View.GONE);
         } else {
-            emptyState.setVisibility(View.GONE);
-            rvRecent.setVisibility(View.VISIBLE);
-            btnClearRecent.setVisibility(View.VISIBLE);
-            documentAdapter.setDocuments(recentDocuments);
+            List<Document> recentDocuments = fileManager.getDocumentsByPaths(recentPaths);
+
+            if (recentDocuments.isEmpty()) {
+                emptyState.setVisibility(View.VISIBLE);
+                rvRecent.setVisibility(View.GONE);
+            } else {
+                emptyState.setVisibility(View.GONE);
+                rvRecent.setVisibility(View.VISIBLE);
+                documentAdapter.setDocuments(recentDocuments);
+            }
         }
     }
 
     private void openDocument(Document document) {
+        // Add to recent files (moves to top if already exists)
         prefsHelper.addRecentFile(document.getFilePath());
 
+        // Open viewer activity
         Intent intent = new Intent(requireContext(), DocumentViewerActivity.class);
         intent.putExtra(Constants.EXTRA_DOCUMENT, document);
         startActivity(intent);
@@ -134,6 +118,5 @@ public class RecentFragment extends Fragment {
             prefsHelper.removeFavorite(document.getId());
             Toast.makeText(requireContext(), "Sevimlilardan o'chirildi", Toast.LENGTH_SHORT).show();
         }
-        loadRecentFiles();
     }
 }

@@ -11,6 +11,7 @@ public class Document implements Serializable {
     private long fileSize;
     private long lastModified;
     private boolean isFavorite;
+    private boolean isFromAssets;  // true = asset file, false = user-uploaded file
 
     public enum DocumentType {
         PDF, PPTX, PPT
@@ -18,6 +19,7 @@ public class Document implements Serializable {
 
     public Document() {
         this.isFavorite = false;
+        this.isFromAssets = true;  // Default to asset file
     }
 
     public Document(String id, String title, String filePath, String categoryId, DocumentType type) {
@@ -27,6 +29,7 @@ public class Document implements Serializable {
         this.categoryId = categoryId;
         this.type = type;
         this.isFavorite = false;
+        this.isFromAssets = true;
     }
 
     // Getters and Setters
@@ -53,6 +56,9 @@ public class Document implements Serializable {
 
     public boolean isFavorite() { return isFavorite; }
     public void setFavorite(boolean favorite) { isFavorite = favorite; }
+
+    public boolean isFromAssets() { return isFromAssets; }
+    public void setFromAssets(boolean fromAssets) { isFromAssets = fromAssets; }
 
     public String getFileExtension() {
         return type.name().toLowerCase();

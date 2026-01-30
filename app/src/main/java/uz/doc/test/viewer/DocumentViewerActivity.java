@@ -134,7 +134,15 @@ public class DocumentViewerActivity extends AppCompatActivity {
         try {
             showLoading();
 
-            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            File file;
+            if (document.isFromAssets()) {
+                // Asset file - copy from assets
+                file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            } else {
+                // User-uploaded file - use directly
+                file = new File(document.getFilePath());
+            }
+
             if (file == null || !file.exists()) {
                 showError();
                 return;
@@ -161,26 +169,27 @@ public class DocumentViewerActivity extends AppCompatActivity {
         try {
             showLoading();
 
-            // Copy file to internal storage first
-            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            File file;
+            if (document.isFromAssets()) {
+                // Copy file from assets to internal storage first
+                file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            } else {
+                // User-uploaded file - use directly
+                file = new File(document.getFilePath());
+            }
 
             if (file == null || !file.exists()) {
                 showError();
                 return;
             }
 
-            // Use Google Docs Viewer in WebView
+            // Use Google Docs Viewer in WebView (requires internet)
             pdfRecyclerView.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
 
             setupWebView();
 
-            // Create HTML content to display PPTX using Google Docs Viewer
-            String fileUrl = "file://" + file.getAbsolutePath();
-            String googleDocsUrl = "https://docs.google.com/gview?embedded=true&url=" + fileUrl;
-
-            // For offline mode, we'll display a simple message
-            // In Step 6, we'll add proper PPTX rendering
+            // Create HTML content to display PPTX
             String html = createPPTXPlaceholderHTML();
             webView.loadDataWithBaseURL(null, html, "text/html", "UTF-8", null);
 
@@ -268,6 +277,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_document_viewer, menu);
@@ -291,7 +301,12 @@ public class DocumentViewerActivity extends AppCompatActivity {
 
     private void shareDocument() {
         try {
-            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            File file;
+            if (document.isFromAssets()) {
+                file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            } else {
+                file = new File(document.getFilePath());
+            }
 
             if (file != null && file.exists()) {
                 Uri fileUri = FileProvider.getUriForFile(
@@ -318,7 +333,12 @@ public class DocumentViewerActivity extends AppCompatActivity {
 
     private void downloadDocument() {
         try {
-            File file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            File file;
+            if (document.isFromAssets()) {
+                file = fileManager.copyAssetToInternalStorage(document.getFilePath());
+            } else {
+                file = new File(document.getFilePath());
+            }
 
             if (file != null && file.exists()) {
                 Toast.makeText(this, "Fayl saqlandi: " + file.getName(), Toast.LENGTH_LONG).show();

@@ -31,4 +31,13 @@
     <string name="pptx_presentation">PowerPoint taqdimot</string>
     <string name="category_icon">Category Icon</string>
     <string name="ma_ruzalar">Ma\'ruzalar</string>
+    <!-- Add these strings to your res/values/strings.xml file -->
+
+    <!-- File Upload -->
+    <string name="add_file">Fayl qo\'shish</string>
+    <string name="file_added">Fayl qo\'shildi: %1$s</string>
+    <string name="file_exists">Bu nomdagi fayl allaqachon mavjud</string>
+    <string name="only_pdf_allowed">Faqat PDF fayllar qo\'shish mumkin</string>
+    <string name="file_permission_required">Fayl tanlash uchun ruxsat kerak</string>
+    <string name="error_uploading_file">Faylni qo\'shishda xatolik</string>
 </resources>

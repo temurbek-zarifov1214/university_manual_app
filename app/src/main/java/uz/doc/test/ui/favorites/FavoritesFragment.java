@@ -22,7 +22,6 @@ import uz.doc.test.utils.Constants;
 import uz.doc.test.utils.SharedPrefsHelper;
 import uz.doc.test.viewer.DocumentViewerActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -43,6 +42,7 @@ public class FavoritesFragment extends Fragment {
 
         initViews(view);
         setupRecyclerView();
+        loadFavorites();
 
         return view;
     }
@@ -50,6 +50,7 @@ public class FavoritesFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Reload favorites when fragment becomes visible (in case favorites changed)
         loadFavorites();
     }
 
@@ -82,30 +83,29 @@ public class FavoritesFragment extends Fragment {
 
     private void loadFavorites() {
         Set<String> favoriteIds = prefsHelper.getFavorites();
-        List<Document> allDocuments = fileManager.getAllDocuments();
-        List<Document> favoriteDocuments = new ArrayList<>();
 
-        // Filter documents that are in favorites
-        for (Document doc : allDocuments) {
-            if (favoriteIds.contains(doc.getId())) {
-                doc.setFavorite(true);
-                favoriteDocuments.add(doc);
-            }
-        }
-
-        if (favoriteDocuments.isEmpty()) {
+        if (favoriteIds.isEmpty()) {
             emptyState.setVisibility(View.VISIBLE);
             rvFavorites.setVisibility(View.GONE);
         } else {
-            emptyState.setVisibility(View.GONE);
-            rvFavorites.setVisibility(View.VISIBLE);
-            documentAdapter.setDocuments(favoriteDocuments);
+            List<Document> favoriteDocuments = fileManager.getDocumentsByIds(favoriteIds);
+
+            if (favoriteDocuments.isEmpty()) {
+                emptyState.setVisibility(View.VISIBLE);
+                rvFavorites.setVisibility(View.GONE);
+            } else {
+                emptyState.setVisibility(View.GONE);
+                rvFavorites.setVisibility(View.VISIBLE);
+                documentAdapter.setDocuments(favoriteDocuments);
+            }
         }
     }
 
     private void openDocument(Document document) {
+        // Add to recent files
         prefsHelper.addRecentFile(document.getFilePath());
 
+        // Open viewer activity
         Intent intent = new Intent(requireContext(), DocumentViewerActivity.class);
         intent.putExtra(Constants.EXTRA_DOCUMENT, document);
         startActivity(intent);
@@ -118,7 +118,7 @@ public class FavoritesFragment extends Fragment {
         } else {
             prefsHelper.removeFavorite(document.getId());
             Toast.makeText(requireContext(), "Sevimlilardan o'chirildi", Toast.LENGTH_SHORT).show();
-            // Refresh the list
+            // Reload the list to remove the unfavorited item
             loadFavorites();
         }
     }

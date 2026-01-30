@@ -1,4 +1,5 @@
 package uz.doc.test.manager;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
@@ -12,12 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
+import java.util.Set;
 
 public class FileManager {
     private static final String TAG = "FileManager";
@@ -25,6 +25,7 @@ public class FileManager {
     private Context context;
     private AssetManager assetManager;
     private Map<String, List<Document>> categoryCache;
+
     private FileManager(Context context) {
         this.context = context.getApplicationContext();
         this.assetManager = context.getAssets();
@@ -40,14 +41,13 @@ public class FileManager {
 
     /**
      * Get all documents from a specific category folder
+     * Includes both asset files and user-uploaded files
      */
     public List<Document> getDocumentsFromCategory(String categoryId) {
-        if (categoryCache.containsKey(categoryId)) {
-            return new ArrayList<>(Objects.requireNonNull(categoryCache.get(categoryId)));
-        }
         List<Document> documents = new ArrayList<>();
-        String folderPath = Constants.ASSETS_BASE_PATH + "/" + categoryId;
 
+        // 1. Load files from assets
+        String folderPath = Constants.assetCategoryPath(categoryId);
         try {
             String[] files = assetManager.list(folderPath);
 
@@ -61,23 +61,52 @@ public class FileManager {
                     Document.DocumentType type = getDocumentType(fileName);
                     if (type != null) {
                         Document doc = new Document();
-                        doc.setId(UUID.randomUUID().toString());
+                        String filePath = folderPath + "/" + fileName;
+                        doc.setId(generateStableId(filePath));
                         doc.setTitle(getFileNameWithoutExtension(fileName));
-                        doc.setFilePath(folderPath + "/" + fileName);
+                        doc.setFilePath(filePath);
                         doc.setCategoryId(categoryId);
                         doc.setType(type);
+                        doc.setFromAssets(true);  // Mark as asset file
 
                         documents.add(doc);
                     }
                 }
             }
-
-            // Sort by title
-            documents.sort((d1, d2) -> d1.getTitle().compareToIgnoreCase(d2.getTitle()));
-            categoryCache.put(categoryId, documents);
         } catch (IOException e) {
             Log.e(TAG, "Error reading files from category: " + categoryId, e);
         }
+
+        // 2. Load user-uploaded files
+        File userCategoryDir = new File(context.getFilesDir(), "user_files/" + categoryId);
+        if (userCategoryDir.exists() && userCategoryDir.isDirectory()) {
+            File[] userFiles = userCategoryDir.listFiles();
+            if (userFiles != null) {
+                for (File file : userFiles) {
+                    if (file.isFile()) {
+                        String fileName = file.getName();
+                        Document.DocumentType type = getDocumentType(fileName);
+
+                        if (type != null) {
+                            Document doc = new Document();
+                            String filePath = file.getAbsolutePath();
+                            doc.setId(generateStableId(filePath));
+                            doc.setTitle(getFileNameWithoutExtension(fileName));
+                            doc.setFilePath(filePath);
+                            doc.setCategoryId(categoryId);
+                            doc.setType(type);
+                            doc.setFromAssets(false);  // Mark as user file
+                            doc.setFileSize(file.length());
+
+                            documents.add(doc);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sort by title
+        documents.sort((d1, d2) -> d1.getTitle().compareToIgnoreCase(d2.getTitle()));
 
         return documents;
     }
@@ -120,6 +149,68 @@ public class FileManager {
         }
 
         return results;
+    }
+
+    /**
+     * Get document by its ID (searches all categories)
+     */
+    public Document getDocumentById(String documentId) {
+        List<Document> allDocs = getAllDocuments();
+
+        for (Document doc : allDocs) {
+            if (doc.getId().equals(documentId)) {
+                return doc;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get multiple documents by their IDs
+     */
+    public List<Document> getDocumentsByIds(Set<String> documentIds) {
+        List<Document> documents = new ArrayList<>();
+        List<Document> allDocs = getAllDocuments();
+
+        for (Document doc : allDocs) {
+            if (documentIds.contains(doc.getId())) {
+                documents.add(doc);
+            }
+        }
+
+        return documents;
+    }
+
+    /**
+     * Get document by file path
+     */
+    public Document getDocumentByPath(String filePath) {
+        List<Document> allDocs = getAllDocuments();
+
+        for (Document doc : allDocs) {
+            if (doc.getFilePath().equals(filePath)) {
+                return doc;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get multiple documents by their file paths
+     */
+    public List<Document> getDocumentsByPaths(List<String> filePaths) {
+        List<Document> documents = new ArrayList<>();
+
+        for (String path : filePaths) {
+            Document doc = getDocumentByPath(path);
+            if (doc != null) {
+                documents.add(doc);
+            }
+        }
+
+        return documents;
     }
 
     /**
@@ -217,6 +308,15 @@ public class FileManager {
     }
 
     /**
+     * Generate stable ID from file path (deterministic)
+     * This ensures same file always gets same ID
+     */
+    private String generateStableId(String filePath) {
+        // Simple hash-based ID generation
+        return String.valueOf(filePath.hashCode());
+    }
+
+    /**
      * Get file size in human-readable format
      */
     public String getFileSizeString(long bytes) {
@@ -224,5 +324,23 @@ public class FileManager {
         int exp = (int) (Math.log(bytes) / Math.log(1024));
         String pre = "KMGTPE".charAt(exp - 1) + "";
         return String.format("%.1f %sB", bytes / Math.pow(1024, exp), pre);
+    }
+
+    /**
+     * Delete user-uploaded file
+     */
+    public boolean deleteUserFile(Document document) {
+        if (document.isFromAssets()) {
+            Log.w(TAG, "Cannot delete asset file");
+            return false;
+        }
+
+        File file = new File(document.getFilePath());
+        if (file.exists() && file.delete()) {
+            Log.d(TAG, "File deleted: " + document.getTitle());
+            return true;
+        }
+
+        return false;
     }
 }
